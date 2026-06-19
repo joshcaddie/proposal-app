@@ -3,12 +3,13 @@ import { auth } from "@clerk/nextjs";
 import { prisma } from "@/lib/prisma";
 import { sendProposalEmail } from "@/lib/email";
 
-export async function POST(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { userId } = auth();
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const { id } = await params;
   const proposal = await prisma.proposal.findFirst({
-    where: { id: params.id, agencyId: userId },
+    where: { id, agencyId: userId },
   });
   if (!proposal) return NextResponse.json({ error: "Not found" }, { status: 404 });
 

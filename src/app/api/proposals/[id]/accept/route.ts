@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendAcceptanceEmails } from "@/lib/email";
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const body = await req.json();
   const { fullName, position, signatureText, signedDate } = body;
 
@@ -11,7 +12,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   }
 
   const proposal = await prisma.proposal.findFirst({
-    where: { token: params.id },
+    where: { token: id },
   });
 
   if (!proposal) return NextResponse.json({ error: "Not found" }, { status: 404 });
