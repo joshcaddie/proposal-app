@@ -1,13 +1,14 @@
-import { auth } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs/server";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import SendButton from "./SendButton";
 
-export default async function ProposalDetailPage({ params }: { params: { id: string } }) {
-  const { userId } = auth();
+export default async function ProposalDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { userId } = await auth();
+  const { id } = await params;
   const proposal = await prisma.proposal.findFirst({
-    where: { id: params.id, agencyId: userId! },
+    where: { id, agencyId: userId! },
     include: { acceptance: true, events: { orderBy: { createdAt: "desc" } } },
   });
   if (!proposal) notFound();

@@ -1,4 +1,4 @@
-import { auth } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs/server";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 
@@ -11,7 +11,7 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 export default async function DashboardPage() {
-  const { userId } = auth();
+  const { userId } = await auth();
   if (!userId) return null;
 
   const proposals = await prisma.proposal.findMany({
