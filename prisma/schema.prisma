@@ -1,0 +1,74 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Proposal {
+  id          String   @id @default(cuid())
+  token       String   @unique
+  status      Status   @default(DRAFT)
+  agencyId    String
+
+  title       String
+  clientName  String
+  clientEmail String
+  preparedBy  String
+  agencyName  String
+  refNumber   String
+  validDays   Int      @default(30)
+  createdAt   DateTime @default(now())
+  sentAt      DateTime?
+  expiresAt   DateTime?
+  logoUrl     String?
+
+  brief        Json?
+  features     Json?
+  sitePages    Json?
+  lineItems    Json?
+  addOns       Json?
+  paymentTerms Json?
+
+  events     ProposalEvent[]
+  acceptance Acceptance?
+}
+
+model ProposalEvent {
+  id         String    @id @default(cuid())
+  proposalId String
+  proposal   Proposal  @relation(fields: [proposalId], references: [id])
+  type       EventType
+  createdAt  DateTime  @default(now())
+  ipAddress  String?
+  userAgent  String?
+}
+
+model Acceptance {
+  id              String   @id @default(cuid())
+  proposalId      String   @unique
+  proposal        Proposal @relation(fields: [proposalId], references: [id])
+  fullName        String
+  position        String?
+  signatureText   String
+  signedDate      String
+  serverTimestamp DateTime @default(now())
+  ipAddress       String?
+  userAgent       String?
+}
+
+enum Status {
+  DRAFT
+  SENT
+  VIEWED
+  ACCEPTED
+  EXPIRED
+}
+
+enum EventType {
+  VIEWED
+  ACCEPTED
+  EXPIRED
+}
